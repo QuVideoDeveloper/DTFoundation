@@ -13,8 +13,7 @@
 #import "DTZipArchivePKZip.h"
 #import "DTZipArchiveNode.h"
 
-#include "zip.h"
-#include "unzip.h"
+@import DTFoundationC;
 
 NSString * const DTZipArchiveProgressNotification = @"DTZipArchiveProgressNotification";
 NSString * const DTZipArchiveErrorDomain = @"DTZipArchive";

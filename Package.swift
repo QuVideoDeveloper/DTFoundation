@@ -19,15 +19,19 @@ let package = Package(
     targets: [
         .target(
             name: "DTFoundation",
-            dependencies: [],
+            dependencies: ["DTFoundationC"],
             path: "Core",
 			exclude: ["DTFoundation-Info.plist", "DTFoundation-Prefix.pch"],
             cSettings: [
                 .headerSearchPath("include/DTFoundation"),
-                .headerSearchPath("Source/Externals/minizip"),
                 .define("BITCODE_GENERATION_MODE", to: "bitcode"),
                 .define("ENABLE_BITCODE", to: "YES")
             ]
+        ),
+        .target(
+            name: "DTFoundationC",
+            dependencies: [],
+            path: "C"
         ),
         .testTarget(
             name: "DTFoundationTests",

@@ -9,8 +9,7 @@
 #import "DTZipArchivePKZip.h"
 #import "DTZipArchiveNode.h"
 
-#include "zip.h"
-#include "unzip.h"
+@import DTFoundationC;
 
 @interface DTZipArchivePKZip()
 
@@ -76,7 +75,7 @@
 {
 	if (_unzFile)
 	{
-		unzClose(_unzFile);
+        dt_unzClose(_unzFile);
 	}
 	
 #if !OS_OBJECT_USE_OBJC
@@ -94,7 +93,7 @@
 	NSMutableArray *tmpArray = [NSMutableArray array];
 	
 	// open the file for unzipping
-	_unzFile = unzOpen((const char *)[self.path UTF8String]);
+	_unzFile = dt_unzOpen((const char *)[self.path UTF8String]);
 	
 	// return if failed
 	if (!_unzFile)
@@ -105,13 +104,13 @@
 	// get file info
 	unz_global_info  globalInfo = {0};
 	
-	if (unzGetGlobalInfo(_unzFile, &globalInfo )!=UNZ_OK )
+	if (dt_unzGetGlobalInfo(_unzFile, &globalInfo )!=UNZ_OK )
 	{
 		// there's a problem
 		return;
 	}
 	
-	if (unzGoToFirstFile(_unzFile)!=UNZ_OK)
+	if (dt_unzGoToFirstFile(_unzFile)!=UNZ_OK)
 	{
 		// unable to go to first file
 		return;
@@ -125,17 +124,17 @@
 	{
 		unz_file_info zipInfo ={0};
 		
-		if (unzOpenCurrentFile(_unzFile) != UNZ_OK)
+		if (dt_dt_unzOpenCurrentFile(_unzFile) != UNZ_OK)
 		{
 			// error uncompressing this file
 			return;
 		}
 		
 		// first call for file info so that we know length of file name
-		if (unzGetCurrentFileInfo(_unzFile, &zipInfo, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK)
+		if (dt_unzGetCurrentFileInfo(_unzFile, &zipInfo, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK)
 		{
 			// cannot get file info
-			unzCloseCurrentFile(_unzFile);
+			dt_unzCloseCurrentFile(_unzFile);
 			return;
 		}
 		
@@ -143,7 +142,7 @@
 		char *fileNameC = (char *)malloc(zipInfo.size_filename+1);
 		
 		// second call to get actual file name
-		unzGetCurrentFileInfo(_unzFile, &zipInfo, fileNameC, zipInfo.size_filename + 1, NULL, 0, NULL, 0);
+		dt_unzGetCurrentFileInfo(_unzFile, &zipInfo, fileNameC, zipInfo.size_filename + 1, NULL, 0, NULL, 0);
 		fileNameC[zipInfo.size_filename] = '\0';
 		NSString *fileName = [NSString stringWithUTF8String:fileNameC];
 		free(fileNameC);
@@ -207,9 +206,9 @@
 		[tmpArray addObject:file];
 		
 		// close the current file
-		unzCloseCurrentFile(_unzFile);
+		dt_unzCloseCurrentFile(_unzFile);
 	}
-	while (!shouldStop && unzGoToNextFile(_unzFile )==UNZ_OK);
+	while (!shouldStop && dt_unzGoToNextFile(_unzFile )==UNZ_OK);
 	
 	if ([tmpArray count])
 	{
@@ -283,7 +282,7 @@
 		return;
 	}
 	
-	if (unzGoToFirstFile(_unzFile) != UNZ_OK)
+	if (dt_unzGoToFirstFile(_unzFile) != UNZ_OK)
 	{
 		if (completion)
 		{
@@ -328,7 +327,7 @@
 			}
 			else
 			{
-                if (unzOpenCurrentFile(self->_unzFile) != UNZ_OK)
+                if (dt_dt_unzOpenCurrentFile(self->_unzFile) != UNZ_OK)
 				{
 					error = [self _errorWithText:@"Unable to open zip file" code:5 underlyingError:nil];
 					
@@ -367,7 +366,7 @@
 				
 				int readBytes;
 				unsigned char buffer[BUFFER_SIZE] = {0};
-                while ((readBytes = unzReadCurrentFile(self->_unzFile, buffer, BUFFER_SIZE)) > 0)
+                while ((readBytes = dt_unzReadCurrentFile(self->_unzFile, buffer, BUFFER_SIZE)) > 0)
 				{
 					if (self.isCancelling)
 					{
@@ -384,7 +383,7 @@
 				}
 				
 				[_destinationFileHandle closeFile];
-                unzCloseCurrentFile(self->_unzFile);
+                dt_unzCloseCurrentFile(self->_unzFile);
 				
 				// increase size of all files (uncompressed) -> to calculate progress
 				sizeUncompressed += node.fileSize;
@@ -411,7 +410,7 @@
 			// increase number of files -> to calculate progress
 			numberOfItemsUncompressed++;
 			
-            unzGoToNextFile(self->_unzFile);
+            dt_unzGoToNextFile(self->_unzFile);
 		} // end of entry loop
 		
 		if (completion && !self.cancelling)
@@ -436,7 +435,7 @@
 		return nil;
 	}
 	
-	if (unzLocateFile(_unzFile, [node.name UTF8String], 1) != UNZ_OK)
+	if (dt_unzLocateFile(_unzFile, [node.name UTF8String], 1) != UNZ_OK)
 	{
 		if (error)
 		{
@@ -446,7 +445,7 @@
 		return nil;
 	}
 	
-	if (unzOpenCurrentFile(_unzFile) != UNZ_OK)
+	if (dt_dt_unzOpenCurrentFile(_unzFile) != UNZ_OK)
 	{
 		if (error)
 		{
@@ -459,12 +458,12 @@
 	int readBytes;
 	unsigned char buffer[BUFFER_SIZE] = {0};
 	NSMutableData *fileData = [[NSMutableData alloc] init];
-	while ((readBytes = unzReadCurrentFile(_unzFile, buffer, BUFFER_SIZE)) > 0)
+	while ((readBytes = dt_unzReadCurrentFile(_unzFile, buffer, BUFFER_SIZE)) > 0)
 	{
 		[fileData appendBytes:buffer length:(uint)readBytes];
 	}
 	
-	unzCloseCurrentFile(_unzFile);
+	dt_unzCloseCurrentFile(_unzFile);
 	return [fileData copy];
 }
 
@@ -500,13 +499,13 @@
 	// get file info
 	unz_global_info  globalInfo = {0};
 	
-	if (unzGetGlobalInfo(_unzFile, &globalInfo )!=UNZ_OK )
+	if (dt_unzGetGlobalInfo(_unzFile, &globalInfo )!=UNZ_OK )
 	{
 		// there's a problem
 		return;
 	}
 	
-	if (unzGoToFirstFile(_unzFile)!=UNZ_OK)
+	if (dt_unzGoToFirstFile(_unzFile)!=UNZ_OK)
 	{
 		// unable to go to first file
 		return;
@@ -520,17 +519,17 @@
 	{
 		unz_file_info zipInfo ={0};
 		
-		if (unzOpenCurrentFile(_unzFile) != UNZ_OK)
+		if (dt_dt_unzOpenCurrentFile(_unzFile) != UNZ_OK)
 		{
 			// error uncompressing this file
 			return;
 		}
 		
 		// first call for file info so that we know length of file name
-		if (unzGetCurrentFileInfo(_unzFile, &zipInfo, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK)
+		if (dt_unzGetCurrentFileInfo(_unzFile, &zipInfo, NULL, 0, NULL, 0, NULL, 0) != UNZ_OK)
 		{
 			// cannot get file info
-			unzCloseCurrentFile(_unzFile);
+			dt_unzCloseCurrentFile(_unzFile);
 			return;
 		}
 		
@@ -545,7 +544,7 @@
 			NSMutableData *tmpData = [[NSMutableData alloc] init];
 			
 			NSInteger readBytes;
-			while((readBytes = unzReadCurrentFile(_unzFile, buffer, BUFFER_SIZE)) > 0)
+			while((readBytes = dt_unzReadCurrentFile(_unzFile, buffer, BUFFER_SIZE)) > 0)
 			{
 				[tmpData appendBytes:buffer length:readBytes];
 			}
@@ -555,9 +554,9 @@
 		}
 		
 		// close the current file
-		unzCloseCurrentFile(_unzFile);
+		dt_unzCloseCurrentFile(_unzFile);
 		
-		unzGoToNextFile(_unzFile);
+        dt_unzGoToNextFile(_unzFile);
 		
 		if (shouldStop)
 		{

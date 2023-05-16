@@ -9,8 +9,7 @@
 #import "DTZipArchiveGZip.h"
 #import "DTZipArchiveNode.h"
 
-#include "zip.h"
-#include "unzip.h"
+@import DTFoundationC;
 
 @interface DTZipArchiveGZip()
 
